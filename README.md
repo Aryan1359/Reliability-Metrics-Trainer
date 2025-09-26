@@ -9,7 +9,7 @@ A simple interactive web page to explain and calculate key power reliability ind
 📚 **Formula sources:** IEEE Std. 1366 (industry standard)  
 🎯 **Purpose:** Student learning aid (not official utility reporting)  
 
-**Live Demo:** https://Aryan1359.github.io/reliability-metrics/  
+**Live Demo:** https://aryan1359.github.io/Reliability-Metrics-Trainer 
 
 ---
 
