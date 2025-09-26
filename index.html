@@ -1,151 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Reliability Metrics Trainer — SAIDI · SAIFI · CAIDI</title>
-<style>
-  :root{
-    --bg:#f9fafb; --card:#ffffff; --ink:#111827; --muted:#4b5563;
-    --a:#2563eb; --b:#7c3aed; --c:#059669; --border:#e5e7eb;
-  }
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-       background:var(--bg);color:var(--ink);line-height:1.6}
-  .wrap{max-width:880px;margin:0 auto;padding:32px 16px 60px}
-  header{text-align:center;margin-bottom:24px}
-  header h1{font-size:clamp(22px,3vw,36px);margin:10px 0;font-weight:800;color:var(--a)}
-  header p{color:var(--muted)}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;
-        padding:20px;margin:18px 0;box-shadow:0 2px 8px #0001}
-  .card h2{margin:0 0 8px;font-size:20px;font-weight:700;color:var(--b)}
-  .formula{background:#f3f4f6;padding:10px;border-radius:8px;
-           font-family:monospace;margin:8px 0}
-  .explain{font-size:14px;color:var(--muted);margin:4px 0}
-  .example{background:#eef2ff;padding:10px;border-radius:8px;margin-top:10px}
-  .example strong{color:var(--a)}
-  footer{margin-top:30px;font-size:13px;color:var(--muted);border-top:1px dashed var(--border);padding-top:10px;text-align:center}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reliability 101 — SAIDI · SAIFI · CAIDI</title>
+  <style>
+    :root{
+      --bg:#f7fafc;           /* light background */
+      --ink:#0f172a;          /* slate-900 */
+      --muted:#475569;        /* slate-600 */
+      --card:#ffffff;         /* white */
+      --accent1:#2563eb;      /* blue-600 */
+      --accent2:#d97706;      /* amber-600 */
+      --accent3:#059669;      /* emerald-600 */
+      --danger:#dc2626;       /* red-600 */
+      --border:#e2e8f0;       /* slate-200 */
+      --soft:#edf2f7;         /* light gray */
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+         background:linear-gradient(180deg,#ffffff 0%,#f7fafc 28%,#f1f5f9 100%);
+         color:var(--ink);line-height:1.7}
+    .wrap{max-width:1100px;margin:0 auto;padding:36px 18px 80px}
+    header{text-align:center;margin-bottom:28px}
+    header h1{font-size:clamp(28px,4.6vw,46px);margin:10px 0 8px;font-weight:900;letter-spacing:.2px}
+    header p{color:var(--muted);margin:0}
+    .banner{margin:14px auto 0;max-width:920px;padding:10px 14px;border-radius:14px;background:linear-gradient(90deg,rgba(37,99,235,.12),rgba(217,119,6,.10),rgba(5,150,105,.10))}
 
-  /* Calculator */
-  .calc h2{color:var(--c)}
-  .table{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:8px}
-  .table th,.table td{padding:8px 10px;text-align:left}
-  .table thead th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-  .row{background:#f9fafb;border:1px solid var(--border);border-radius:8px}
-  .row input{width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  button{border:none;background:var(--a);color:white;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
-  button.ghost{background:#e5e7eb;color:var(--ink)}
-  .result{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:8px;background:#f3f4f6}
-</style>
+    .grid{display:grid;gap:18px;margin-top:20px}
+    @media(min-width:940px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 18px 16px;box-shadow:0 6px 22px rgba(15,23,42,.06)}
+    .card h2{margin:0 0 8px;font-size:20px;font-weight:800}
+    .kicker{display:inline-block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:2px}
+    .formula{margin:10px 0 10px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:var(--soft);font-family:ui-monospace,Menlo,Consolas,monospace}
+    .units{font-size:12px;color:var(--muted);margin-top:-6px}
+    .usecase{font-size:14px;margin:8px 0 0}
+    .bullets{margin:8px 0 0 18px}
+    .bullets li{margin:4px 0}
+    .ex{margin-top:10px;background:linear-gradient(180deg,#fff, #f8fafc);border:1px solid var(--border);border-radius:12px;padding:12px}
+    .ex strong{color:var(--accent1)}
+
+    .saidi h2{color:var(--accent1)}
+    .saifi h2{color:var(--accent2)}
+    .caidi h2{color:var(--accent3)}
+
+    .section{margin-top:28px}
+    .section h3{margin:0 0 8px;font-size:18px}
+    .row{display:grid;gap:12px}
+    @media(min-width:760px){.row{grid-template-columns:1fr 1fr}}
+
+    /* Buttons & inputs */
+    .btn{border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--accent1);color:#fff}
+    .btn.ghost{background:#e2e8f0;color:var(--ink)}
+    .btn.warn{background:var(--danger)}
+    input[type="number"], input[type="text"]{border:1px solid var(--border);border-radius:10px;padding:8px 10px;width:100%;background:#fff}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:10px}
+    th,td{text-align:left;padding:8px 10px}
+    thead th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    tbody tr{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+
+    .result{margin-top:12px;display:grid;gap:12px}
+    @media(min-width:760px){.result{grid-template-columns:1fr 1fr}}
+    .panel{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--card)}
+    .panel h4{margin:0 0 6px;font-size:16px}
+    code{background:#f1f5f9;border-radius:6px;padding:2px 5px}
+
+    footer{margin-top:30px;font-size:12px;color:var(--muted);text-align:center}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>Reliability Metrics Trainer</h1>
-    <p>Learn SAIDI, SAIFI, and CAIDI with clear formulas, term-by-term explanations, and a practice calculator.</p>
-  </header>
+  <div class="wrap">
+    <header>
+      <span class="kicker">Power System Reliability</span>
+      <h1>SAIDI · SAIFI · CAIDI — Learn the Why and How</h1>
+      <p>Three core IEEE 1366 indices that quantify outage duration, frequency, and restoration time. Clear definitions, realistic use cases, and a live calculator.</p>
+      <div class="banner">Tip: N<sub>total</sub> = total customers served (whole territory). ΣNᵢ = customers interrupted across outages — they’re not the same.</div>
+    </header>
 
-  <!-- SAIDI -->
-  <section class="card">
-    <h2>1) SAIDI — System Average Interruption Duration Index</h2>
-    <p><strong>Meaning:</strong> Average total minutes of outage each customer experiences in one year.</p>
-    <div class="formula">SAIDI = Σ(Nᵢ × Dᵢ) ÷ N<sub>total</sub></div>
-    <div class="explain">• Nᵢ = number of customers affected in outage i</div>
-    <div class="explain">• Dᵢ = duration of outage i (minutes)</div>
-    <div class="explain">• N<sub>total</sub> = total customers served</div>
-    <p><em>Units:</em> minutes per customer · year</p>
-    <div class="example"><strong>Example:</strong> If total customer-minutes interrupted = 3,000,000 and total served = 25,000 → SAIDI = 120 minutes/customer·year.</div>
-  </section>
+    <!-- Three concise sections -->
+    <section class="grid">
+      <article class="card saidi">
+        <span class="kicker">Duration</span>
+        <h2>SAIDI — System Average Interruption Duration Index</h2>
+        <div class="formula">SAIDI = Σ(Nᵢ × Dᵢ) ÷ N<sub>total</sub></div>
+        <div class="units">Units: minutes per customer · year</div>
+        <p><strong>Meaning:</strong> Average outage minutes each customer experiences in a year.</p>
+        <p class="usecase"><strong>Use cases:</strong></p>
+        <ul class="bullets">
+          <li>Track annual reliability targets and trend restoration improvements.</li>
+          <li>Communicate typical experience to regulators and customers.</li>
+        </ul>
+        <div class="ex"><strong>Example:</strong> Σ(Nᵢ×Dᵢ)=4,400; N<sub>total</sub>=1,000 → SAIDI=<strong>4.40</strong> min/customer·yr.</div>
+      </article>
 
-  <!-- SAIFI -->
-  <section class="card">
-    <h2>2) SAIFI — System Average Interruption Frequency Index</h2>
-    <p><strong>Meaning:</strong> Average number of outages each customer experiences per year, regardless of length.</p>
-    <div class="formula">SAIFI = Σ(Nᵢ) ÷ N<sub>total</sub></div>
-    <div class="explain">• Nᵢ = number of customers affected in outage i</div>
-    <div class="explain">• N<sub>total</sub> = total customers served</div>
-    <p><em>Units:</em> interruptions per customer · year</p>
-    <div class="example"><strong>Example:</strong> If total customer interruptions = 12,000 and total served = 40,000 → SAIFI = 0.30 interruptions/customer·year.</div>
-  </section>
+      <article class="card saifi">
+        <span class="kicker">Frequency</span>
+        <h2>SAIFI — System Average Interruption Frequency Index</h2>
+        <div class="formula">SAIFI = Σ(Nᵢ) ÷ N<sub>total</sub></div>
+        <div class="units">Units: interruptions per customer · year</div>
+        <p><strong>Meaning:</strong> Average number of sustained interruptions per customer per year.</p>
+        <p class="usecase"><strong>Use cases:</strong></p>
+        <ul class="bullets">
+          <li>Diagnose feeder health: frequent short outages elevate SAIFI.</li>
+          <li>Prioritize vegetation and equipment programs that reduce hits.</li>
+        </ul>
+        <div class="ex"><strong>Example:</strong> ΣNᵢ=140; N<sub>total</sub>=1,000 → SAIFI=<strong>0.14</strong> interruptions/customer·yr.</div>
+      </article>
 
-  <!-- CAIDI -->
-  <section class="card">
-    <h2>3) CAIDI — Customer Average Interruption Duration Index</h2>
-    <p><strong>Meaning:</strong> Average restoration time per outage event.</p>
-    <div class="formula">CAIDI = SAIDI ÷ SAIFI</div>
-    <p><em>Units:</em> minutes per interruption</p>
-    <div class="example"><strong>Example:</strong> If SAIDI = 120 and SAIFI = 0.30 → CAIDI = 400 minutes/interruption.</div>
-  </section>
+      <article class="card caidi">
+        <span class="kicker">Restoration</span>
+        <h2>CAIDI — Customer Average Interruption Duration Index</h2>
+        <div class="formula">CAIDI = SAIDI ÷ SAIFI</div>
+        <div class="units">Units: minutes per interruption</div>
+        <p><strong>Meaning:</strong> Average duration of an interruption for those who experience one.</p>
+        <p class="usecase"><strong>Use cases:</strong></p>
+        <ul class="bullets">
+          <li>Field ops KPI: restoration efficiency when outages occur.</li>
+          <li>Helps isolate whether issues are about <em>how often</em> vs <em>how long</em>.</li>
+        </ul>
+        <div class="ex"><strong>Example:</strong> SAIDI=4.40; SAIFI=0.14 → CAIDI=<strong>31.43</strong> min/interruption. <em>If SAIFI=0, CAIDI is undefined.</em></div>
+      </article>
+    </section>
 
-  <!-- Calculator -->
-  <section class="card calc" id="calc">
-    <h2>Practice Calculator</h2>
-    <p>Enter outage groups below. For each outage i:</p>
-    <div class="explain">• Nᵢ = customers affected</div>
-    <div class="explain">• Dᵢ = outage duration (minutes)</div>
-    <p>Also enter the total number of customers served (N<sub>total</sub>).</p>
+    <!-- Quiz-style example -->
+    <section class="section card" id="quiz">
+      <span class="kicker">Quick check</span>
+      <h2>Which denominator is right?</h2>
+      <p>We have three outages: (100 customers, 5 min), (200, 10 min), (300, 11 min). That gives ΣNᵢ=600 and Σ(Nᵢ×Dᵢ)=5,800 customer·minutes.</p>
+      <div class="row">
+        <div class="panel">
+          <h4>Method A (IEEE correct)</h4>
+          <p>Use N<sub>total</sub> = total customers served in the territory (e.g., 10,000).</p>
+          <p>
+            SAIFI = 600 / 10,000 = 0.06<br>
+            SAIDI = 5,800 / 10,000 = 0.58<br>
+            CAIDI = 0.58 / 0.06 = 9.67
+          </p>
+        </div>
+        <div class="panel">
+          <h4>Method B (common mistake)</h4>
+          <p>Set N<sub>total</sub> = ΣNᵢ = 600.</p>
+          <p>
+            SAIFI = 600 / 600 = 1.00 (always 1!)<br>
+            SAIDI = 5,800 / 600 = 9.67<br>
+            CAIDI = 9.67 / 1 = 9.67
+          </p>
+        </div>
+      </div>
+      <div class="ex" style="margin-top:12px">
+        <strong>Your turn:</strong> Which method is right, and why? Post your answer on Coursera under the related discussion post for this module.
+      </div>
+    </section>
 
-    <table class="table">
-      <thead>
-        <tr><th>Customers affected (Nᵢ)</th><th>Duration (Dᵢ, minutes)</th><th></th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <div class="actions">
-      <button type="button" onclick="addRow()">+ Add outage</button>
-      <button type="button" class="ghost" onclick="clearRows()">Clear</button>
-    </div>
-    <div style="margin-top:12px">
-      <label for="ntotal"><strong>Total customers served:</strong></label>
-      <input id="ntotal" type="number" min="1" step="1" placeholder="e.g., 35000" style="margin-left:8px;max-width:200px" />
-    </div>
-    <div class="actions" style="margin-top:12px">
-      <button type="button" onclick="compute()">Compute Metrics</button>
-    </div>
-    <div class="result" id="result"><em>Results will appear here.</em></div>
-  </section>
+    <!-- Live dual-method calculator -->
+    <section class="section card" id="calc">
+      <span class="kicker">Practice</span>
+      <h2>Live calculator — see both methods side by side</h2>
+      <p>Enter outages (Nᵢ customers affected, Dᵢ duration in minutes) and your service territory size N<sub>total</sub>. We compute both the <strong>correct IEEE method</strong> and the <strong>wrong method</strong> (where N<sub>total</sub> is forced to ΣNᵢ) so you can compare.</p>
 
-  <footer>
-    Based on IEEE Std. 1366 definitions. <br>
-    SAIDI = avg outage minutes per customer/year · SAIFI = avg interruptions per customer/year · CAIDI = avg minutes/interruption. <br>
-    For learning purposes only.
-  </footer>
-</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn" type="button" id="add-row">+ Add outage</button>
+        <button class="btn ghost" type="button" id="clear-rows">Clear</button>
+        <button class="btn ghost" type="button" id="load-quiz">Load quiz example</button>
+      </div>
 
-<script>
-  const tbody = document.getElementById('rows');
-  function addRow(N='', D=''){
-    const tr=document.createElement('tr');
-    tr.className='row';
-    tr.innerHTML=`<td><input type="number" min="0" placeholder="e.g. 1000" value="${N}"></td>
-                  <td><input type="number" min="0" placeholder="e.g. 60" value="${D}"></td>
-                  <td><button type="button" class="ghost" onclick="this.closest('tr').remove()">Remove</button></td>`;
-    tbody.appendChild(tr);
-  }
-  function clearRows(){tbody.innerHTML='';document.getElementById('result').innerHTML='<em>Results cleared.</em>';}
-  function compute(){
-    const ntotal=parseFloat(document.getElementById('ntotal').value);
-    if(!ntotal||ntotal<=0){alert('Enter total customers served.');return;}
-    const rows=[...tbody.querySelectorAll('tr')];
-    if(rows.length===0){alert('Add at least one outage row.');return;}
-    let sumND=0,sumN=0;
-    for(const r of rows){
-      const cells=r.querySelectorAll('input');
-      const N=parseFloat(cells[0].value)||0;
-      const D=parseFloat(cells[1].value)||0;
-      sumND+=N*D;
-      sumN+=N;
+      <table aria-label="dual-method reliability calculator">
+        <thead>
+          <tr>
+            <th>Customers affected (Nᵢ)</th>
+            <th>Duration (Dᵢ, minutes)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label for="ntotal"><strong>Total customers served (N<sub>total</sub>):</strong></label>
+        <input id="ntotal" type="number" min="1" placeholder="e.g., 10000" style="max-width:200px">
+        <span style="color:var(--muted);font-size:12px">Leave blank to preview only the wrong method.</span>
+      </div>
+
+      <div class="result">
+        <div class="panel">
+          <h4>Correct (IEEE)</h4>
+          <div id="right-output"><em>Enter N<sub>total</sub> to compute correct metrics.</em></div>
+        </div>
+        <div class="panel">
+          <h4>Wrong (sets N<sub>total</sub> = ΣNᵢ)</h4>
+          <div id="wrong-output"><em>Waiting for outages…</em></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Based on IEEE Std. 1366 definitions. Educational single‑page 
+    </footer>
+  </div>
+
+  <script>
+    // ===== Utility =====
+    const tbody = document.getElementById('rows');
+    const addBtn = document.getElementById('add-row');
+    const clearBtn = document.getElementById('clear-rows');
+    const loadQuizBtn = document.getElementById('load-quiz');
+    const ntotalInput = document.getElementById('ntotal');
+    const rightBox = document.getElementById('right-output');
+    const wrongBox = document.getElementById('wrong-output');
+
+    function addRow(N = '', D = ''){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="number" min="0" placeholder="e.g., 1000" value="${N}" /></td>
+        <td><input type="number" min="0" placeholder="e.g., 60" value="${D}" /></td>
+        <td><button class="btn ghost" type="button">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
+      recalc();
     }
-    const SAIDI=sumND/ntotal;
-    const SAIFI=sumN/ntotal;
-    const CAIDI=(SAIFI>0)?SAIDI/SAIFI:0;
-    document.getElementById('result').innerHTML=
-      `<strong>SAIDI:</strong> ${SAIDI.toFixed(2)} minutes/customer·year<br>
-       <strong>SAIFI:</strong> ${SAIFI.toFixed(3)} interruptions/customer·year<br>
-       <strong>CAIDI:</strong> ${CAIDI.toFixed(2)} minutes/interruption`;
-  }
-  // preload one row
-  addRow(1000,60);
-</script>
+    function clearRows(){ tbody.innerHTML = ''; recalc(); }
+
+    function loadQuiz(){
+      clearRows();
+      addRow(100,5); addRow(200,10); addRow(300,11);
+      ntotalInput.value = 10000;
+      recalc();
+    }
+
+    // Delegate events
+    addBtn.addEventListener('click', ()=>addRow());
+    clearBtn.addEventListener('click', clearRows);
+    loadQuizBtn.addEventListener('click', loadQuiz);
+    tbody.addEventListener('input', (e)=>{ if(e.target.tagName==='INPUT') recalc(); });
+    tbody.addEventListener('click', (e)=>{
+      if(e.target.tagName==='BUTTON'){ e.target.closest('tr').remove(); recalc(); }
+    });
+    ntotalInput.addEventListener('input', recalc);
+
+    function recalc(){
+      const rows = [...tbody.querySelectorAll('tr')];
+      let sumN = 0, sumND = 0;
+      for(const r of rows){
+        const [nIn, dIn] = r.querySelectorAll('input');
+        const N = Number(nIn.value) || 0;
+        const D = Number(dIn.value) || 0;
+        sumN += N;
+        sumND += N * D;
+      }
+
+      // Wrong method (N_total := ΣNᵢ)
+      if(sumN > 0){
+        const wSAIFI = 1; // by construction
+        const wSAIDI = sumND / sumN;
+        const wCAIDI = wSAIDI / wSAIFI;
+        wrongBox.innerHTML = `
+          ΣNᵢ = <code>${sumN.toLocaleString()}</code><br>
+          Σ(Nᵢ×Dᵢ) = <code>${sumND.toLocaleString()}</code> customer·min<br>
+          SAIFI = ΣNᵢ/ΣNᵢ = <code>${wSAIFI.toFixed(3)}</code> (always 1)<br>
+          SAIDI = Σ(Nᵢ×Dᵢ)/ΣNᵢ = <code>${wSAIDI.toFixed(2)}</code> min/customer·yr<br>
+          CAIDI = SAIDI/SAIFI = <code>${wCAIDI.toFixed(2)}</code> min/interruption
+        `;
+      } else {
+        wrongBox.innerHTML = '<em>Add outages to see the wrong method.</em>';
+      }
+
+      // Correct method (IEEE)
+      const raw = (ntotalInput.value || '').trim();
+      if(raw === ''){
+        rightBox.innerHTML = '<em>Enter N_total to compute the correct method.</em>';
+        return;
+      }
+      const Ntotal = Number(raw);
+      if(!Number.isFinite(Ntotal) || Ntotal <= 0){
+        rightBox.innerHTML = '<em>Enter a valid N_total (> 0).</em>';
+        return;
+      }
+      if(sumN <= 0){
+        rightBox.innerHTML = '<em>Add outages (Nᵢ and Dᵢ) to compute the metrics.</em>';
+        return;
+      }
+
+      const SAIDI = sumND / Ntotal;
+      const SAIFI = sumN / Ntotal;
+      const CAIDI = SAIFI > 0 ? (SAIDI / SAIFI) : null;
+      rightBox.innerHTML = `
+        ΣNᵢ = <code>${sumN.toLocaleString()}</code><br>
+        Σ(Nᵢ×Dᵢ) = <code>${sumND.toLocaleString()}</code> customer·min<br>
+        N_total = <code>${Ntotal.toLocaleString()}</code><br>
+        SAIFI = ΣNᵢ/N_total = <code>${SAIFI.toFixed(3)}</code> interruptions/customer·yr<br>
+        SAIDI = Σ(Nᵢ×Dᵢ)/N_total = <code>${SAIDI.toFixed(2)}</code> min/customer·yr<br>
+        CAIDI = SAIDI/SAIFI = <code>${CAIDI !== null ? CAIDI.toFixed(2) : '—'}</code> min/interruption ${CAIDI===null ? '<span style="color:#64748b">(undefined when SAIFI = 0)</span>' : ''}
+      `;
+    }
+
+    // Start with one blank row for usability
+    addRow();
+  </script>
 </body>
 </html>
